@@ -17,7 +17,7 @@ phases:
         - sed -i 's@CONTAINER_IMAGE@'"$REPOSITORY_URI:$TAG"'@' hello-k8s.yml
         - $(aws ecr get-login --no-include-email)
         - export KUBECONFIG=$HOME/.kube/config
-        - aws eks --region ap-northeast-1 update-kubeconfig --name devel
+        - aws eks --region ap-northeast-1 update-kubeconfig --name eksworkshop
   build:
     commands:
       - docker login -u chojy2 -p f3a3d716-a1ef-434c-9fd0-fd075ce45e8a
