@@ -28,6 +28,7 @@ phases:
       - export AWS_EXPIRATION=$(echo ${CREDENTIALS} | jq -r '.Credentials.Expiration')
       - aws eks update-kubeconfig --name $EKS_CLUSTER_NAME
       - curl -sS -o kubectl https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl
+      - kubectl apply -f hello-k8s.yml
       - printf '[{"name":"hello-k8s","imageUri":"%s"}]' $REPOSITORY_URI:$TAG > build.json
 artifacts:
   files: build.json
