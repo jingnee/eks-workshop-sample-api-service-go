@@ -3,10 +3,13 @@ version: 0.2
 phases:
   install:
     commands:
-      - curl -sS -o aws-iam-authenticator https://amazon-eks.s3-us-west-2.amazonaws.com/1.10.3/2018-07-26/bin/linux/amd64/aws-iam-authenticator
-      - curl -sS -o kubectl https://amazon-eks.s3-us-west-2.amazonaws.com/1.14.6/2019-08-22/bin/linux/amd64/kubectl
+      - curl -o aws-iam-authenticator https://amazon-eks.s3-us-west-2.amazonaws.com/1.13.7/2019-06-11/bin/linux/amd64/aws-iam-authenticator
+      - curl -o kubectl https://amazon-eks.s3-us-west-2.amazonaws.com/1.11.10/2019-06-21/bin/linux/amd64/kubectl
       - chmod +x ./kubectl ./aws-iam-authenticator
-      - export PATH=$PWD/:$PATH
+      - mkdir -p $HOME/bin && cp ./kubectl $HOME/bin/kubectl && export PATH=$HOME/bin:$PATH
+      - kubectl version --short --client
+      - mkdir -p $HOME/bin && cp ./aws-iam-authenticator $HOME/bin/aws-iam-authenticator && export PATH=$HOME/bin:$PATH
+      - aws-iam-authenticator help
       - apt-get update && apt-get -y install jq python3-pip python3-dev && pip3 install --upgrade awscli
   pre_build:
       commands:
@@ -14,6 +17,7 @@ phases:
         - sed -i 's@CONTAINER_IMAGE@'"$REPOSITORY_URI:$TAG"'@' hello-k8s.yml
         - $(aws ecr get-login --no-include-email)
         - export KUBECONFIG=$HOME/.kube/config
+        - aws eks --region ap-northeast-1 update-kubeconfig --name devel
   build:
     commands:
       - docker login -u chojy2 -p f3a3d716-a1ef-434c-9fd0-fd075ce45e8a
@@ -28,7 +32,6 @@ phases:
       - export AWS_SESSION_TOKEN="$(echo ${CREDENTIALS} | jq -r '.Credentials.SessionToken')"
       - export AWS_EXPIRATION=$(echo ${CREDENTIALS} | jq -r '.Credentials.Expiration')
       - aws eks update-kubeconfig --name $EKS_CLUSTER_NAME
-      - kubectl version --client
       - kubectl apply -f hello-k8s.yml
       - printf '[{"name":"hello-k8s","imageUri":"%s"}]' $REPOSITORY_URI:$TAG > build.json
 artifacts:
